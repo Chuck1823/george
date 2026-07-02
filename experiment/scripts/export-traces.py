@@ -1,153 +1,234 @@
 #!/usr/bin/env python3
 """
-Export OpenClaw session to Pioneer-compatible training traces.
+Dual-track trace export from OpenClaw sessions.
 
-Usage: python3 export-traces.py <session_jsonl_path> [--output OUTPUT]
+Track 1: Text-only (Pioneer-compatible fine-tuning)
+Track 2: Full trajectory (OpenAI tool_calls format for agentic training)
 
-Reads session JSONL (from ~/.openclaw/agents/main/sessions/), extracts
-user messages and assistant responses, and outputs JSONL in Pioneer's
-Chat SFT format.
-
-Pioneer format:
-{"messages": [
-  {"role": "system", "content": "..."},
-  {"role": "user", "content": "..."},
-  {"role": "assistant", "content": "..."}
-]}
+Usage: python3 ~/george/experiment/scripts/export-traces.py <session.jsonl> [--output-dir DIR]
 """
 
 import json
 import sys
-import argparse
+import os
 from pathlib import Path
 
-
-def extract_messages(session_path):
-    """Extract user/assistant messages from an OpenClaw session JSONL file."""
+def extract_track1(session_path):
+    """Text-only traces: user text + assistant text, no tools/thinking."""
     messages = []
-    system_msg = None
-    
-    with open(session_path, 'r') as f:
+    with open(session_path) as f:
         for line in f:
             try:
-                entry = json.loads(line.strip())
-            except json.JSONDecodeError:
+                entry = json.loads(line)
+            except:
                 continue
-            
             if entry.get('type') != 'message':
                 continue
-            
             msg = entry.get('message', {})
-            role = msg.get('role')
+            role = msg.get('role', '')
             content = msg.get('content')
-            
-            if role is None or content is None:
+            if role == 'toolResult':
                 continue
-            
-            # Handle content as string or list of content blocks
-            if isinstance(content, str):
-                text = content
-            elif isinstance(content, list):
-                text = '\n'.join(
-                    block.get('text', '') 
-                    for block in content 
-                    if isinstance(block, dict) and block.get('type') == 'text'
-                )
-            else:
-                text = str(content)
-            
-            if not text.strip():
-                continue
-            
-            # System prompt
-            if role == 'system':
-                if system_msg is None:
-                    system_msg = {"role": "system", "content": text}
-                continue
-            
-            # User or assistant message
-            messages.append({
-                "role": "user" if role == "user" else "assistant",
-                "content": text
-            })
-    
-    return system_msg, messages
 
+            text = ''
+            if isinstance(content, list):
+                for block in content:
+                    if block.get('type') == 'text':
+                        t = block.get('text', '').strip()
+                        if t:
+                            text += t + '\n'
+            elif isinstance(content, str):
+                text = content.strip()
+            text = text.strip()
+            if not text:
+                continue
 
-def split_into_traces(system_msg, messages, max_turns_per_trace=20):
-    """
-    Split a long conversation into training traces.
-    Each trace is self-contained: system prompt + conversation segments.
-    We split at natural boundaries (user messages).
-    """
+            clean_role = 'user' if role == 'user' else 'assistant'
+            messages.append({'role': clean_role, 'content': text})
+
+    # Split into traces (max 15 turns each)
     traces = []
-    
-    if not messages:
-        return traces
-    
-    # Split into chunks - each chunk ends with an assistant response
-    current_messages = []
-    if system_msg:
-        current_messages.append(system_msg)
-    
-    for i, msg in enumerate(messages):
-        current_messages.append(msg)
-        
-        # Break at assistant response when we have enough turns, 
-        # or when this is the last message
+    current = []
+    for msg in messages:
+        current.append({'role': msg['role'], 'content': msg['content']})
         if msg['role'] == 'assistant':
-            should_split = len(current_messages) >= max_turns_per_trace or i == len(messages) - 1
-            
-            if should_split and len(current_messages) >= 3:  # Need at least system + user + assistant
-                trace = {"messages": current_messages}
-                traces.append(trace)
-                current_messages = [system_msg] if system_msg else []
-    
-    # Don't forget any remaining messages
-    if len(current_messages) >= 3:
-        traces.append({"messages": current_messages})
-    
+            tc = sum(1 for m in current if m['role'] in ('user', 'assistant'))
+            is_end = tc >= 15 or msg == messages[-1]
+            if is_end and tc >= 2:
+                traces.append({'messages': current})
+                current = []
+    if len(current) >= 2:
+        traces.append({'messages': current})
     return traces
 
+def extract_track2(session_path):
+    """Full trajectory: preserves tool calls, results, and thinking."""
+    messages = []
+    tool_call_ids_seen = set()
+
+    with open(session_path) as f:
+        for line in f:
+            try:
+                entry = json.loads(line)
+            except:
+                continue
+            if entry.get('type') != 'message':
+                continue
+            msg = entry.get('message', {})
+            role = msg.get('role', '')
+            content = msg.get('content')
+
+            if role == 'user':
+                text = ''
+                if isinstance(content, list):
+                    for block in content:
+                        if block.get('type') == 'text':
+                            t = block.get('text', '').strip()
+                            if t:
+                                text += t + '\n'
+                elif isinstance(content, str):
+                    text = content.strip()
+                text = text.strip()
+                if text:
+                    messages.append({'role': 'user', 'content': text})
+
+            elif role == 'assistant':
+                track2_msg = {'role': 'assistant', 'content': ''}
+                tool_calls = []
+
+                if isinstance(content, list):
+                    text_parts = []
+                    for block in content:
+                        btype = block.get('type', '')
+                        if btype == 'text':
+                            t = block.get('text', '').strip()
+                            if t:
+                                text_parts.append(t)
+                        elif btype == 'toolCall':
+                            tc = {
+                                'id': block.get('id', f"call_{len(tool_calls)}"),
+                                'type': 'function',
+                                'function': {
+                                    'name': block.get('name', ''),
+                                    'arguments': json.dumps(block.get('arguments', {}))
+                                }
+                            }
+                            tool_calls.append(tc)
+                            tool_call_ids_seen.add(block.get('id', ''))
+
+                    if text_parts:
+                        track2_msg['content'] = '\n'.join(text_parts)
+                    if tool_calls:
+                        track2_msg['tool_calls'] = tool_calls
+
+                elif isinstance(content, str) and content.strip():
+                    track2_msg['content'] = content.strip()
+
+                # Only add if has content or tool calls
+                if track2_msg['content'] or tool_calls:
+                    messages.append(track2_msg)
+
+            elif role == 'toolResult':
+                # Map to OpenAI tool role
+                tool_call_id = msg.get('toolCallId', '')
+                tool_name = msg.get('toolName', '')
+                text = ''
+                if isinstance(content, list):
+                    for block in content:
+                        if block.get('type') == 'text':
+                            t = block.get('text', '').strip()
+                            if t:
+                                text += t + '\n'
+                elif isinstance(content, str):
+                    text = content.strip()
+                text = text.strip()
+
+                messages.append({
+                    'role': 'tool',
+                    'content': text if text else f'[Empty result from {tool_name}]',
+                    'tool_call_id': tool_call_id
+                })
+
+    # Split into traces (break at assistant response after tool round-trip)
+    traces = []
+    current = []
+    max_turns = 20
+
+    for msg in messages:
+        current.append(msg)
+        if msg['role'] == 'assistant':
+            tc = sum(1 for m in current if m['role'] in ('user', 'assistant'))
+            is_end = tc >= max_turns or msg == messages[-1]
+            if is_end and tc >= 2:
+                traces.append({'messages': current})
+                current = []
+    if len(current) >= 2:
+        traces.append({'messages': current})
+    return traces
 
 def main():
-    parser = argparse.ArgumentParser(description='Export OpenClaw sessions to training traces')
-    parser.add_argument('session_paths', nargs='+', help='Session JSONL file(s)')
-    parser.add_argument('--output', '-o', help='Output JSONL file (default: stdout)')
-    parser.add_argument('--max-turns', type=int, default=20, 
-                        help='Max turns per trace for splitting long conversations')
-    
-    args = parser.parse_args()
-    
-    all_traces = []
-    
-    for session_path in args.session_paths:
-        path = Path(session_path)
-        if not path.exists():
-            print(f"Warning: {path} not found, skipping", file=sys.stderr)
-            continue
-        
-        system_msg, messages = extract_messages(path)
-        
-        if not messages:
-            print(f"Warning: No messages found in {path}", file=sys.stderr)
-            continue
-        
-        traces = split_into_traces(system_msg, messages, args.max_turns)
-        all_traces.extend(traces)
-        print(f"Extracted {len(traces)} trace(s) from {path.name}")
-    
-    # Write output
-    output_file = args.output
-    if output_file:
-        with open(output_file, 'w') as f:
-            for trace in all_traces:
-                f.write(json.dumps(trace, ensure_ascii=False) + '\n')
-        print(f"Written {len(all_traces)} traces to {output_file}")
-    else:
-        for trace in all_traces:
-            print(json.dumps(trace, ensure_ascii=False))
+    if len(sys.argv) < 2:
+        print("Usage: export-traces.py <session.jsonl> [session2.jsonl ...] [--output-dir DIR]")
+        sys.exit(1)
 
+    session_files = []
+    output_dir = None
+    i = 1
+    while i < len(sys.argv):
+        arg = sys.argv[i]
+        if arg == '--output-dir' and i + 1 < len(sys.argv):
+            output_dir = sys.argv[i + 1]
+            i += 2
+        else:
+            session_files.append(arg)
+            i += 1
+
+    track1_output = Path(output_dir) / 'text' if output_dir else Path('text')
+    track2_output = Path(output_dir) / 'trajectory' if output_dir else Path('trajectory')
+    track1_output.mkdir(parents=True, exist_ok=True)
+    track2_output.mkdir(parents=True, exist_ok=True)
+
+    manifest_entries = []
+
+    for session_path in session_files:
+        sp = Path(session_path)
+        if not sp.exists():
+            print(f"SKIP: {sp} not found")
+            continue
+
+        date_str = sp.stem.split('.')[0] if '.' in sp.stem else sp.stem
+
+        # Track 1
+        t1 = extract_track1(sp)
+        t1_file = track1_output / f'{date_str}.jsonl'
+        with open(t1_file, 'w') as f:
+            for t in t1:
+                f.write(json.dumps(t, ensure_ascii=False) + '\n')
+
+        # Track 2
+        t2 = extract_track2(sp)
+        t2_file = track2_output / f'{date_str}.jsonl'
+        with open(t2_file, 'w') as f:
+            for t in t2:
+                f.write(json.dumps(t, ensure_ascii=False) + '\n')
+
+        print(f"{sp.name}:")
+        print(f"  Track 1 (text): {len(t1)} traces -> {t1_file}")
+        print(f"  Track 2 (trajectory): {len(t2)} traces -> {t2_file}")
+
+        manifest_entries.append({
+            'session_id': sp.stem,
+            'date': date_str,
+            'text_traces': len(t1),
+            'trajectory_traces': len(t2)
+        })
+
+    # Write manifest
+    manifest_file = track1_output.parent / 'manifest.jsonl'
+    with open(manifest_file, 'w') as f:
+        for entry in manifest_entries:
+            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+    print(f"\nManifest: {manifest_file}")
 
 if __name__ == '__main__':
     main()
