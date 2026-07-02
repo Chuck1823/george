@@ -1,29 +1,57 @@
-# Dual-Track Trace Capture System
+# Trace Collection: Dual-Track System
 
-## Two datasets, every qualifying session
+## Overview
+Captures every qualifying session into two training data formats for distillation.
 
-### Track 1: Text-only (Pioneer-compatible)
-Format: `{"messages": [{"role":"user","content":"..."},{"role":"assistant","content":"..."}]}`
+## Data Sources
 
-Use: Fine-tuning reasoning quality, general conversation skills
-Target models: Pioneer (Qwen/Llama small models), Hugging Face
+**Primary:** Built-in OpenClaw `/export-trajectory` command
+- Produces trajectory bundles with full tool calls, results, and reasoning
+- Located in `.openclaw/trajectory-exports/`
+- OpenAI fine-tuning format included
 
-### Track 2: Full trajectory (OpenAI tool_calls format)  
-Format: `{"messages": [
-  {"role":"user","content":"..."},
-  {"role":"assistant","content":"...","tool_calls":[{"type":"function","function":{"name":"...","arguments":"..."}}]},
-  {"role":"tool","content":"...","tool_call_id":"..."},
-  {"role":"assistant","content":"..."}
-]}`
+**Secondary:** Manual extraction from session store (for text-only track)
+- `experiment/scripts/export-all.py` reads session JSONL directly
+- Produces clean text-only traces for Pioneer fine-tuning
 
-Use: Fine-tuning tool-use, agentic routing, function calling
-Target: OpenAI, Anthropic, Together AI, local training with TRL/axolotl
+## Two Datasets
 
-## When to capture
-- Session ends with a clear goal achieved or abandoned
-- 3+ tool calls made
+### Track 1: Text-Only (Pioneer-compatible)
+- Format: `{"messages": [{"role":"user","content":"..."},{"role":"assistant","content":"..."}]}`
+- Strips all tool calls, tool results, and thinking blocks
+- Location: `experiment/traces/text/*.jsonl`
+
+### Track 2: Full Trajectory (OpenAI fine-tuning format)  
+- Format: Full OpenAI tool_calls format with tool results
+- Preserves tool decisions, parameters, and outputs
+- Location: `.openclaw/trajectory-exports/` (from slash command)
+- Also exported to: `experiment/traces/trajectory/*.jsonl`
+
+## Capturing Current Session
+
+**From chat:** Type `/export-trajectory` or `/trajectory`
+- Creates trajectory bundle in workspace
+- Includes both OpenAI fine-tuning format and raw events
+
+**Programmatic export of all sessions:**
+```bash
+python3 experiment/scripts/export-all.py
+```
+
+## When to Capture
+- Session ends with clear goal achieved or abandoned
+- 3+ tool calls made (complex reasoning)
 - Self-correction or notable reasoning path
-- Clear good OR bad example (balanced dataset)
+- Both good examples and bad (balanced dataset)
 
-## Export script
-`scripts/export-traces.py` — reads OpenClaw session JSONL, writes both formats
+## File Layout
+```
+experiment/traces/
+├── text/                    # Pioneer format (text only)
+├── trajectory/              # OpenAI format (full tool calls)
+├── manifest.jsonl           # Index of all exports
+└── README.md               # This file
+```
+
+## Toggle
+Check `experiment/trace-collector.json` → `enabled` field.
