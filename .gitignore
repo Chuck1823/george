@@ -1,0 +1,20 @@
+# Secrets and credentials
+*.key
+*.pem
+secret*
+
+# System files
+.DS_Store
+._*
+
+# OpenClaw internal state
+openclaw-workspace-state.json
+
+# Large files
+*.sqlite
+*.db
+
+# Python
+__pycache__/
+*.pyc
+.env

@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "mode": "quality",
+  "minComplexity": 3,
+  "compressAfterDays": 1,
+  "note": "Enabled 2026-06-30. Charles approved."
+}
