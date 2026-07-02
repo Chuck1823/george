@@ -1,20 +1,24 @@
-# Secrets and credentials
-*.key
-*.pem
-secret*
-
-# System files
+# OS junk
 .DS_Store
 ._*
 
-# OpenClaw internal state
+# Secrets
+.env
+*.key
+*.pem
+**/secrets*
+
+# OpenClaw internal state (outside workspace, managed separately)
 openclaw-workspace-state.json
 
-# Large files
-*.sqlite
-*.db
+# Large / generated trace files
+experiment/traces/*.jsonl
+experiment/traces/*.jsonl.gz
 
-# Python
+# Build artifacts
 __pycache__/
 *.pyc
-.env
+
+# SQLite databases
+*.sqlite
+*.db
