@@ -476,18 +476,30 @@ os.makedirs(os.path.join(OUTPUT, "sft"), exist_ok=True)
 os.makedirs(os.path.join(OUTPUT, "agentic"), exist_ok=True)
 os.makedirs(os.path.join(OUTPUT, "distill"), exist_ok=True)
 
-session_files = sorted(glob.glob(os.path.join(SESSIONS, "*.jsonl")))
+session_files = sorted(glob.glob(os.path.join(SESSIONS, "*.jsonl"))) + sorted(glob.glob(os.path.join(SESSIONS, "*.jsonl.reset.*")))
 session_files = [
     f for f in session_files
-    if "trajectory" not in f and not f.endswith(".jsonl.lock") and ".reset." not in f
+    if "trajectory" not in f and not f.endswith(".jsonl.lock")
 ]
+
+# De-duplicate by session ID: if both .jsonl and .jsonl.reset.* exist for same session,
+# prefer the reset file (it's more complete – the original before rotation).
+def session_id(path):
+    return os.path.basename(path).split(".jsonl")[0]
+
+seen = {}
+for f in session_files:
+    sid = session_id(f)
+    if sid not in seen or ".reset." in f:
+        seen[sid] = f
+session_files = sorted(seen.values())
 
 manifest_entries = []
 total_exported = 0
 skipped = []
 
 for sp in session_files:
-    fname = os.path.basename(sp).replace(".jsonl", "")
+    fname = os.path.basename(sp).split(".jsonl")[0]
 
     text_msgs, traj_msgs, models_used, primary_model = parse_session(sp)
 
