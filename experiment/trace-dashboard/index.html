@@ -9,147 +9,137 @@
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
            background: #0f0f16; color: #e0e0e0; padding: 1rem; min-height: 100vh; }
     .header { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 1rem; border-bottom: 1px solid #2a2a35; margin-bottom: 1.5rem; }
-    h1 { font-size: 1.1rem; color: #00e676; }
-    .header-right { display: flex; gap: 1rem; align-items: baseline; }
-    .header-right a { color: #4fc3f7; font-size: 0.75rem; text-decoration: none; }
-    .header-right span { color: #666; font-size: 0.65rem; }
-    
-    /* Big stat */
-    .big-stat { text-align: center; margin-bottom: 2rem; }
-    .big-num { font-size: 3.5rem; font-weight: 800; color: #00e676; line-height: 1; }
-    .big-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-    .goal-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 15px; font-size: 0.65rem; font-weight: 600; margin-top: 0.5rem; }
-    .goal-badge.on-track { background: rgba(0,230,118,0.15); color: #00e676; }
-    .goal-badge.behind { background: rgba(255,183,77,0.15); color: #ffb74d; }
-    .goal-badge.far { background: rgba(239,83,80,0.15); color: #ef5350; }
-    
-    /* Tooltip */
-    .tooltip { position: relative; cursor: help; border-bottom: 1px dotted #666; }
-    .tooltip .tip-text { display: none; position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
-      background: #1e1e2a; color: #ccc; font-size: 0.7rem; font-weight: 400; line-height: 1.4;
-      padding: 0.5rem 0.7rem; border-radius: 6px; width: 220px; text-align: left;
-      border: 1px solid #333; letter-spacing: 0; text-transform: none; z-index: 10; }
-    .tooltip:hover .tip-text { display: block; }
-    
-    /* Grid */
-    .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
-    .card { background: #1a1a24; border-radius: 10px; padding: 1rem; border: 1px solid #2a2a35; }
-    .card-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.75rem; }
-    .track-name { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #aaa; }
-    .track-total { font-size: 1.5rem; font-weight: 700; color: #00e676; }
-    
-    /* Quality bars */
-    .q-row { display: flex; align-items: center; margin: 0.3rem 0; gap: 0.4rem; }
-    .q-label { width: 55px; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.3px; }
-    .q-label.great { color: #00e676; }
-    .q-label.good { color: #4fc3f7; }
-    .q-label.mediocre { color: #ffb74d; }
-    .q-label.poor { color: #ef5350; }
-    .bar-bg { flex: 1; height: 5px; background: #252530; border-radius: 3px; overflow: hidden; }
-    .bar { height: 100%; border-radius: 3px; }
+    h1 { font-size: 1rem; color: #00e676; }
+    .header-right { display: flex; gap: 0.75rem; align-items: center; }
+    .header-right a { color: #4fc3f7; font-size: 0.7rem; text-decoration: none; }
+    .header-right span { color: #666; font-size: 0.6rem; }
+
+    .v-section { margin-bottom: 2.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #1e1e2a; }
+    .v-section:last-of-type { border-bottom: none; }
+    .v-title { font-size: 0.9rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; }
+    .v-sub { font-size: 0.65rem; color: #666; margin-bottom: 0.8rem; }
+
+    .track-block { background: #161620; border-radius: 8px; padding: 0.7rem; margin-bottom: 0.6rem; border: 1px solid #2a2a35; }
+    .t-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888; margin-bottom: 0.3rem; font-weight: 600; }
+    .def-text { font-size: 0.6rem; color: #555; margin-bottom: 0.5rem; line-height: 1.3; }
+
+    .q-row { display: flex; align-items: center; margin: 0.2rem 0; gap: 0.3rem; }
+    .q-lbl { width: 45px; font-size: 0.55rem; text-transform: uppercase; }
+    .q-lbl.great { color: #00e676; }
+    .q-lbl.good { color: #4fc3f7; }
+    .q-lbl.mediocre { color: #ffb74d; }
+    .q-lbl.poor { color: #ef5350; }
+    .bar-bg { flex: 1; height: 4px; background: #252530; border-radius: 2px; overflow: hidden; }
+    .bar { height: 100%; border-radius: 2px; }
     .bar.great { background: #00e676; }
     .bar.good { background: #4fc3f7; }
     .bar.mediocre { background: #ffb74d; }
     .bar.poor { background: #ef5350; }
-    .q-count { width: 25px; text-align: right; font-size: 0.7rem; font-weight: 600; color: #999; }
-    
-    /* Categories */
-    .cat-section { background: #1a1a24; border-radius: 10px; padding: 1rem; border: 1px solid #2a2a35; }
-    .cat-section h3 { font-size: 0.75rem; color: #aaa; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.75rem; }
-    .cat-row { display: flex; align-items: center; gap: 0.4rem; margin: 0.3rem 0; }
-    .cat-pill { padding: 0.15rem 0.5rem; border-radius: 12px; font-size: 0.65rem; background: #2a2a35; color: #aaa; min-width: 50px; text-align: center; }
-    .cat-count { font-size: 0.7rem; color: #999; }
-    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    .q-ct { width: 20px; text-align: right; font-size: 0.55rem; color: #888; }
+
+    .sub-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin: 0.6rem 0 0.25rem; font-weight: 600; }
+    .c-row { display: flex; align-items: center; margin: 0.15rem 0; gap: 0.3rem; }
+    .c-pill { padding: 0.1rem 0.4rem; border-radius: 6px; font-size: 0.55rem; background: #252530; color: #aaa; min-width: 30px; text-align: center; }
+    .c-ct { font-size: 0.55rem; color: #888; }
+
+    .refresh-note { color: #555; font-size: 0.6rem; text-align: center; padding-top: 1rem; border-top: 1px solid #2a2a35; }
+    .track-block { overflow: hidden; }
+    .def-text { word-break: break-word; hyphens: auto; }
+    @media (max-width: 480px) {
+      body { padding: 0.6rem; }
+      .q-lbl { width: 38px; font-size: 0.5rem; }
+      .def-text { font-size: 0.55rem; }
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1><span class="tooltip">Trace Dataset Monitor<span class="tip-text">Counts across all tracks (SFT + Agentic + Distill). Rebuild stats by running: python3 experiment/scripts/export-all.py</span></span></h1>
+    <h1>Trace Dataset Monitor</h1>
     <div class="header-right">
       <a href="https://chuck1823.github.io/mom-and-pop-site/" target="_blank">Mom & Pop</a>
-      <a href="https://chuck1823.github.io/famcloud-site/" target="_blank">FamCloud</a>
       <span id="updated"></span>
     </div>
   </div>
-  
-  <div class="big-stat">
-    <div class="big-num" id="bigCount">--</div>
-    <div class="big-label" id="sessionLabel">-- sessions processed</div>
-    <div id="goalBadge" class="goal-badge on-track">Loading...</div>
-  </div>
-  
-  <div class="grid" id="tracksGrid"></div>
-  
-  <div class="cat-section">
-    <h3>Task Categories <span class="tooltip">(combined)<span class="tip-text">Task types inferred from tool usage patterns and conversation content. Covers all three tracks.</span></span></h3>
-    <div id="catBreakdown"></div>
-  </div>
-  
+
+  <div id="verticals"></div>
+
+  <div class="refresh-note">Rebuild stats: python3 experiment/scripts/export-all.py, then push stats.json</div>
+
   <script>
-    async function loadStats() {
-      try {
-        const res = await fetch('stats.json?t=' + Date.now());
-        const data = await res.json();
-        render(data);
-      } catch(e) { console.error(e); }
+    const vNames = {
+      nail_salon: 'Nail Salon',
+      barber: 'Barber Shop',
+      dry_cleaner: 'Dry Cleaner',
+      restaurant: 'Restaurant',
+      salon_hair: 'Hair Salon',
+      auto_repair: 'Auto Repair',
+      general_assistant: 'General Assistant'
+    };
+    const tNames = { sft: 'SFT', agentic: 'Agentic', distill: 'Distill' };
+    const defs = {
+      sft: 'Plain text only. Compatible with every fine-tuning API (OpenAI, Together, Fireworks, Unsloth, LLaMA-Factory).',
+      agentic: 'Tool calls + results. Compatible with OpenAI, Together, Fireworks, vLLM.',
+      distill: 'SFT + internal reasoning/thinking. Captures full thought process for distillation into smaller models.'
+    };
+
+    async function load() {
+      try { const r = await fetch('stats.json'); render(await r.json()); }
+      catch(e) { document.body.innerHTML = '<p style="color:#ef5350;padding:1rem">Failed to load stats.json</p>'; }
     }
-    
+
     function render(data) {
       document.getElementById('updated').textContent = data.updated_at || '';
-      document.getElementById('bigCount').textContent = data.total_traces.toLocaleString();
-      document.getElementById('sessionLabel').textContent = data.total_sessions + ' sessions processed';
-      
-      const target = 200;
-      const count = data.total_traces;
-      const pct = Math.min(100, Math.round((count / target) * 100));
-      const badge = document.getElementById('goalBadge');
-      if (pct >= 100) { badge.className = 'goal-badge on-track'; badge.textContent = target + '-trace goal reached'; }
-      else if (pct >= 50) { badge.className = 'goal-badge on-track'; badge.textContent = pct + '% to goal (' + count + '/' + target + ')'; }
-      else if (pct >= 25) { badge.className = 'goal-badge behind'; badge.textContent = pct + '% to goal (' + count + '/' + target + ')'; }
-      else { badge.className = 'goal-badge far'; badge.textContent = pct + '% to goal (' + count + '/' + target + ')'; }
-      
-      const defs = {
-        sft: 'Chat SFT - text only, system + user/assistant alternation. Compatible with every fine-tuning API (OpenAI, Together, Fireworks, Unsloth, LLaMA-Factory, Pioneer, etc.)',
-        agentic: 'Full tool-calls - assistant messages include tool_calls fields, tool results use role=tool. OpenAI format. Compatible with OpenAI, Together, Fireworks, vLLM.',
-        distill: 'SFT + reasoning - assistant messages include both content (response) and reasoning (internal thinking). Compatible with Pioneer API and models that support reasoning_content/thinking fields.'
-      };
-      
-      const grid = document.getElementById('tracksGrid');
-      grid.innerHTML = '';
-      for (const [name, track] of Object.entries(data.tracks)) {
-        const card = document.createElement('div');
-        card.className = 'card';
-        let qHTML = '';
-        const maxQ = Math.max(...Object.values(track.quality), 1);
-        for (const [q, c] of Object.entries(track.quality)) {
-          qHTML += '<div class="q-row"><span class="q-label ' + q + '">' + q + '</span><div class="bar-bg"><div class="bar ' + q + '" style="width:' + (c/maxQ*100) + '%"></div></div><span class="q-count">' + c + '</span></div>';
-        }
-        let catHTML = '';
-        for (const [cat, c] of Object.entries(track.tasks || {})) {
-          catHTML += '<div class="cat-row"><span class="cat-pill">' + cat + '</span><span class="cat-count">' + c + '</span></div>';
-        }
-        card.innerHTML = '<div class="card-header"><span class="track-name tooltip">' + name + '<span class="tip-text">' + (defs[name] || '') + '</span></span><span class="track-total">' + track.total + '</span></div>' + qHTML + '<div style="margin-top:0.5rem;border-top:1px solid #2a2a35;padding-top:0.4rem">' + catHTML + '</div>';
-        grid.appendChild(card);
-      }
-      
-      const combinedCats = {};
-      for (const track of Object.values(data.tracks)) {
-        for (const [cat, c] of Object.entries(track.tasks || {})) {
-          combinedCats[cat] = (combinedCats[cat] || 0) + c;
+      const el = document.getElementById('verticals');
+      el.innerHTML = '';
+
+      // Group by vertical across all tracks
+      const byV = {};
+      for (const [tName, track] of Object.entries(data.tracks)) {
+        const verts = track.verticals || {};
+        for (const [vName, count] of Object.entries(verts)) {
+          if (!byV[vName]) byV[vName] = { sft: null, agentic: null, distill: null, total: 0 };
+          byV[vName][tName] = { count: count, quality: track.quality, tasks: track.tasks };
+          byV[vName].total += count;
         }
       }
-      const catDiv = document.getElementById('catBreakdown');
-      const sorted = Object.entries(combinedCats).sort((a, b) => b[1] - a[1]);
-      const maxCat = Math.max(...Object.values(combinedCats), 1);
-      let cHTML = '';
-      for (const [cat, c] of sorted) {
-        cHTML += '<div class="cat-row"><span class="cat-pill" style="min-width:80px">' + cat + '</span><div class="bar-bg" style="flex:1"><div class="bar good" style="width:' + (c/maxCat*100) + '%;background:#4fc3f7"></div></div><span class="cat-count">' + c + '</span></div>';
+
+      const sorted = Object.entries(byV).sort((a, b) => b[1].total - a[1].total);
+
+      for (const [vKey, vData] of sorted) {
+        if (vData.total === 0) continue;
+        let html = '<div class="v-section">';
+        html += '<div class="v-title">' + (vNames[vKey] || vKey) + '</div>';
+        html += '<div class="v-sub">' + vData.total + ' traces across all datasets</div>';
+
+        for (const tKey of ['sft', 'agentic', 'distill']) {
+          const info = vData[tKey];
+          if (!info) continue;
+          html += '<div class="track-block">';
+          html += '<div class="t-label">' + tNames[tKey] + ' — ' + info.count + ' traces</div>';
+          html += '<div class="def-text">' + (defs[tKey] || '') + '</div>';
+
+          // Quality bars
+          const maxQ = Math.max(...Object.values(info.quality), 1);
+          for (const [q, c] of Object.entries(info.quality)) {
+            if (c === 0) continue;
+            html += '<div class="q-row"><span class="q-lbl ' + q + '">' + q + '</span><div class="bar-bg"><div class="bar ' + q + '" style="width:' + (c/maxQ*100) + '%"></div></div><span class="q-ct">' + c + '</span></div>';
+          }
+
+          // Task categories
+          if (info.tasks && Object.keys(info.tasks).length) {
+            html += '<div class="sub-label">Tasks</div>';
+            for (const [cat, c] of Object.entries(info.tasks)) {
+              html += '<div class="c-row"><span class="c-pill">' + cat + '</span><span class="c-ct">' + c + '</span></div>';
+            }
+          }
+          html += '</div>';
+        }
+        html += '</div>';
+        el.innerHTML += html;
       }
-      catDiv.innerHTML = cHTML;
     }
-    
-    loadStats();
-    setInterval(loadStats, 60000);
+
+    load();
   </script>
 </body>
 </html>
