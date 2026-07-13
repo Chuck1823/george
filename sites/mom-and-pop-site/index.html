@@ -19,13 +19,19 @@
     .hero { padding: 90px 0 50px; text-align: center; }
     .badge { display: inline-flex; align-items: center; gap: 8px; padding: 5px 14px 5px 8px; border-radius: 200px; font-size: 0.72rem; font-weight: 600; background: rgba(94,181,247,0.06); border: 1px solid rgba(94,181,247,0.1); color: #5EB5F7; margin-bottom: 24px; }
     .badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #5EB5F7; box-shadow: 0 0 6px rgba(94,181,247,0.6); }
-    .hero h1 { font-size: clamp(2rem, 7vw, 3.2rem); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin: 0 0 16px; }
+    .hero h1 { font-size: clamp(2rem, 7vw, 3.2rem); font-weight: 800; line-height: 1.1; margin: 0 0 14px; }
     .hero h1 .accent { background: linear-gradient(135deg, #5EB5F7, #A78BFA); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .hero p { color: #666; font-size: 1rem; margin: 0 18px 28px; }
+    .hero p { color: #666; font-size: 0.92rem; margin: 0 18px 24px; }
+    .hero p .dash { color: #444; }
     .btn { display: inline-block; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 0.9rem; background: linear-gradient(135deg, #5EB5F7, #8B5CF6); color: #fff; }
     .btn-o { display: inline-block; padding: 12px 28px; border-radius: 8px; font-weight: 500; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1); color: #aaa; }
     .btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
     .sl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; margin-bottom: 8px; color: #5EB5F7; }
+    .toggle-wrap { display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; }
+    .toggle-btn { padding: 6px 18px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); color: #666; background: transparent; cursor: pointer; }
+    .toggle-btn.active { background: rgba(94,181,247,0.1); border-color: #5EB5F7; color: #5EB5F7; }
+    .uc { display: none; }
+    .uc.active { display: block; }
     .st { font-size: clamp(1.1rem, 4vw, 1.3rem); font-weight: 700; letter-spacing: -0.5px; margin-bottom: 20px; }
     .line { height: 1px; background: rgba(255,255,255,0.04); }
     .cards { padding: 60px 0; }
@@ -91,7 +97,7 @@
   <section class="hero w">
     <div class="badge">Early Access</div>
     <h1>Your first <span class="accent">AI employee.</span></h1>
-    <p>Your own private AI that gets to know your business. Works across WhatsApp, iMessage, SMS, and phone — answering calls, booking customers, sending reminders, and cutting no-shows. It self-improves over time, never misses a conversation, and stays entirely yours.<br>Introducing The Desk.</p>
+    <p>Your own private AI that gets to know your business. Works across WhatsApp, iMessage, SMS, and phone.<br><span class="dash">Introducing The Desk.</span></p>
     <div class="btns">
       <a href="mailto:hello@momandpoplabs.com" class="btn">Get Early Access</a>
       <a href="#pricing" class="btn-o">See Pricing</a>
@@ -102,12 +108,27 @@
 
   <section class="cards w">
     <div class="sl">What it does</div>
-    <div class="st">Your whole front desk, automated.</div>
-    <div class="c-grid">
-      <div class="c-card"><div class="label">Phone</div><h3>Never miss a call</h3><div class="b">Customer calls. Nobody answers. They hang up.</div><div class="a">AI answers every call. Books them. Sends a confirmation.</div></div>
-      <div class="c-card"><div class="label">Text</div><h3>Books from texts too</h3><div class="b">"Do you have space at 3?" — nobody replies for 45 min.</div><div class="a">AI replies instantly. Offers times. Books them.</div></div>
-      <div class="c-card"><div class="label">Reminders</div><h3>Cuts no-shows in half</h3><div class="b">3-4 no-shows a week. Nobody reminded them.</div><div class="a">Automatic text reminders. No-shows drop 50%.</div></div>
-      <div class="c-card"><div class="label">Retention</div><h3>Brings back lost customers</h3><div class="b">Haven't seen Maria in 6 weeks. Nobody noticed.</div><div class="a">AI sends "time for your fill?" — she books.</div></div>
+    <div class="toggle-wrap">
+      <button class="toggle-btn active" onclick="useCase('desk')">Front Desk</button>
+      <button class="toggle-btn" onclick="useCase('office')">Back Office</button>
+    </div>
+    <div id="uc-desk" class="uc active">
+      <div class="st">Your whole front desk, automated.</div>
+      <div class="c-grid">
+        <div class="c-card"><div class="label">Phone</div><h3>Never miss a call</h3><div class="b">Customer calls. Nobody answers. They hang up.</div><div class="a">AI answers every call. Books them. Sends a confirmation.</div></div>
+        <div class="c-card"><div class="label">Text</div><h3>Books from texts too</h3><div class="b">"Do you have space at 3?" — nobody replies for 45 min.</div><div class="a">AI replies instantly. Offers times. Books them.</div></div>
+        <div class="c-card"><div class="label">Reminders</div><h3>Cuts no-shows in half</h3><div class="b">3-4 no-shows a week. Nobody reminded them.</div><div class="a">Automatic text reminders. No-shows drop 50%.</div></div>
+        <div class="c-card"><div class="label">Retention</div><h3>Brings back lost customers</h3><div class="b">Haven't seen Maria in 6 weeks. Nobody noticed.</div><div class="a">AI sends "time for your fill?" — she books.</div></div>
+      </div>
+    </div>
+    <div id="uc-office" class="uc">
+      <div class="st">Your back office, automated.</div>
+      <div class="c-grid">
+        <div class="c-card"><div class="label">Inventory</div><h3>Tracks stock for you</h3><div class="b">Halfway through gel. Forgot to reorder. Short at 4pm.</div><div class="a">AI counts usage per booking. Flags low stock before you run out.</div></div>
+        <div class="c-card"><div class="label">Reporting</div><h3>Know your numbers</h3><div class="b">No idea what made more — fills or gels this week.</div><div class="a">Weekly report: fills, gels, revenue, new vs returning customers.</div></div>
+        <div class="c-card"><div class="label">Staff</div><h3>Schedule management</h3><div class="b">Who's in Tuesday? Maria asked for Thursday off.</div><div class="a">AI manages the schedule. Techs swap shifts. You approve.</div></div>
+        <div class="c-card"><div class="label">Compliance</div><h3>License tracking</h3><div class="b">Tech's license expired. Nobody noticed until inspection.</div><div class="a">AI tracks license expiry dates. Alerts you before deadlines.</div></div>
+      </div>
     </div>
   </section>
 
@@ -115,12 +136,23 @@
 
   <section class="flow-section w">
     <div class="sl">How it works</div>
-    <div class="st">How a booking happens.</div>
-    <div class="flow-s">
-      <div class="flow-i"><div class="n">01</div><h4>Customer calls</h4><p>Through your business line.</p></div>
-      <div class="flow-i"><div class="n">02</div><h4>AI answers</h4><p>Checks your calendar, handles the conversation.</p></div>
-      <div class="flow-i"><div class="n">03</div><h4>Books it</h4><p>Adds to calendar. Sends confirmation.</p></div>
-      <div class="flow-i"><div class="n">04</div><h4>You get a summary</h4><p>"Booked: Sarah, 3:15, $45."</p></div>
+    <div id="flow-desk" class="uc active">
+      <div class="st">How a booking happens.</div>
+      <div class="flow-s">
+        <div class="flow-i"><div class="n">01</div><h4>Customer calls</h4><p>Through your business line.</p></div>
+        <div class="flow-i"><div class="n">02</div><h4>AI answers</h4><p>Checks your calendar, handles the conversation.</p></div>
+        <div class="flow-i"><div class="n">03</div><h4>Books it</h4><p>Adds to calendar. Sends confirmation.</p></div>
+        <div class="flow-i"><div class="n">04</div><h4>You get a summary</h4><p>"Booked: Sarah, 3:15, $45."</p></div>
+      </div>
+    </div>
+    <div id="flow-office" class="uc">
+      <div class="st">How back office automation works.</div>
+      <div class="flow-s">
+        <div class="flow-i"><div class="n">01</div><h4>AI monitors</h4><p>Tracks bookings, inventory, staff, compliance — all connected.</p></div>
+        <div class="flow-i"><div class="n">02</div><h4>Patterns surface</h4><p>"Low on acetone" or "Maria's license expires in 10 days."</p></div>
+        <div class="flow-i"><div class="n">03</div><h4>You approve</h4><p>One tap to reorder, reschedule, or renew.</p></div>
+        <div class="flow-i"><div class="n">04</div><h4>It handles it</h4><p>Orders placed, staff adjusted. You're notified when done.</p></div>
+      </div>
     </div>
   </section>
 
@@ -226,5 +258,14 @@
   </section>
 
   <footer class="w"><p>© 2026 Mom and Pop Labs. All rights reserved.</p></footer>
+  <script>
+    function useCase(id) {
+      document.querySelectorAll('.uc').forEach(e => e.classList.remove('active'));
+      document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('uc-' + id).classList.add('active');
+      document.getElementById('flow-' + id).classList.add('active');
+      event.target.classList.add('active');
+    }
+  </script>
 </body>
 </html>

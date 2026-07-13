@@ -24,11 +24,13 @@ Quality pipeline:
   3. SYSTEM:   prepend behavioral system prompt from workspace files
   4. SCORE:    per-trace quality labels (great/good/mediocre/poor)
   5. CLASSIFY: infer task type (research, devops, coding, etc.)
+  6. VERTICAL: auto-label by business vertical (nail_salon, barber, etc.)
 """
 
 import json
 import os
 import glob
+import re
 from datetime import datetime
 
 # ============================================================
@@ -44,7 +46,10 @@ TRACKS = ["sft", "agentic", "distill"]
 MIN_TOOL_CALLS = 3      # At least 3 tool calls = non-trivial
 MIN_USER_TURNS = 2      # At least 2 user turns = real conversation
 MIN_TRACE_TURNS = 2     # Minimum turns to qualify as a trace sample
+FORCE_VERTICAL = os.environ.get("VERTICAL", None)  # Explicit vertical override
 TRACE_CUT_TURNS = 15    # Split multi-session traces at this turn count
+
+
 
 # ============================================================
 # System prompt (assembled from workspace identity files)
@@ -509,6 +514,9 @@ for sp in session_files:
         skipped.append((fname, reason))
         continue
 
+    # Use VERTICAL env var if set, otherwise default to "unclassified"
+    vertical = FORCE_VERTICAL if FORCE_VERTICAL else "unclassified"
+
     # Split into traces
     sft_traces, agg_traces, dis_traces = split_into_traces(text_msgs, traj_msgs)
 
@@ -531,6 +539,7 @@ for sp in session_files:
             target["score"] = score["score"]
             target["labels"] = score["labels"]
             target["task_type"] = trace_task
+            target["vertical"] = vertical
             target["metadata"] = {
                 "tools_used": sorted(unique_tools),
                 "thinking_blocks": thinking,
@@ -566,7 +575,7 @@ for sp in session_files:
                     }
 
                 # Attach quality + metadata to all tracks
-                for k in ("quality", "score", "labels", "task_type", "metadata"):
+                for k in ("quality", "score", "labels", "task_type", "vertical", "metadata"):
                     if k in t:
                         clean[k] = t[k]
 
@@ -604,11 +613,12 @@ with open(manifest_path, "w") as f:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 print(f"\nManifest: {manifest_path}")
 
-# Count totals per track with quality breakdown
+# Count totals per track with quality breakdown and verticals
 for track in TRACKS:
     total = 0
     qualities = {"great": 0, "good": 0, "mediocre": 0, "poor": 0}
     tasks = {}
+    verticals = {}
     for fp in glob.glob(os.path.join(OUTPUT, track, "*.jsonl")):
         with open(fp) as fh:
             for line in fh:
@@ -620,6 +630,8 @@ for track in TRACKS:
                         qualities[q] += 1
                     tt = t.get("task_type", "unknown")
                     tasks[tt] = tasks.get(tt, 0) + 1
+                    v = t.get("vertical", "unlabeled")
+                    verticals[v] = verticals.get(v, 0) + 1
                 except:
                     pass
-    print(f"  {track}: {total} traces | quality: {dict(qualities)} | tasks: {tasks}")
+    print(f"  {track}: {total} traces | quality: {dict(qualities)} | tasks: {tasks} | verticals: {verticals}")

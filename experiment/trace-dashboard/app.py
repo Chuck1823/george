@@ -1,79 +1,68 @@
 #!/usr/bin/env python3
-"""Trace Dataset Dashboard – Live counter for the experiment."""
+"""Generate stats.json for the trace dataset monitor."""
 
 import json
-import glob
 import os
-from http.server import HTTPServer, SimpleHTTPRequestHandler
-from datetime import datetime
+import glob
+from datetime import datetime, timezone
 
-MANIFEST = "/Users/georgemalenclaw/.openclaw/workspace/experiment/traces/manifest.jsonl"
+TRACES_DIR = "/Users/georgemalenclaw/.openclaw/workspace/experiment/traces"
+STATS_FILE = "/Users/georgemalenclaw/.openclaw/workspace/experiment/trace-dashboard/stats.json"
 
-BASE = "/Users/georgemalenclaw/.openclaw/workspace/experiment/traces"
-TRACKS = {
-    "sft": os.path.join(BASE, "sft"),
-    "agentic": os.path.join(BASE, "agentic"),
-    "distill": os.path.join(BASE, "distill"),
+GOAL = 200  # Target traces per label
+
+TRACKS = ["sft", "agentic", "distill"]
+
+DEFS = {
+    "sft": "Plain text only. Compatible with every fine-tuning API (OpenAI, Together, Fireworks, Unsloth, LLaMA-Factory).",
+    "agentic": "Tool calls + results. Compatible with OpenAI, Together, Fireworks, vLLM.",
+    "distill": "SFT + internal reasoning/thinking. Captures full thought process for distillation.",
 }
 
-def load_data():
-    stats = {"tracks": {}, "total_sessions": 0, "total_traces": 0, "updated_at": ""}
 
-    if os.path.exists(MANIFEST):
-        with open(MANIFEST) as f:
-            for line in f:
-                try:
-                    json.loads(line)
-                    stats["total_sessions"] += 1
-                except:
-                    pass
-
-    for track_name, track_dir in TRACKS.items():
+def build_stats():
+    tracks = {}
+    for track_name in TRACKS:
+        dirpath = os.path.join(TRACES_DIR, track_name)
         total = 0
         quality = {"great": 0, "good": 0, "mediocre": 0, "poor": 0}
-        tasks = {}
-        for fp in glob.glob(os.path.join(track_dir, "*.jsonl")):
+        labels = {}
+
+        for fp in sorted(glob.glob(os.path.join(dirpath, "*.jsonl"))):
             with open(fp) as fh:
                 for line in fh:
-                    total += 1
                     try:
                         t = json.loads(line)
+                        total += 1
                         q = t.get("quality", "unknown")
                         if q in quality:
                             quality[q] += 1
-                        tt = t.get("task_type", "unknown")
-                        tasks[tt] = tasks.get(tt, 0) + 1
-                    except:
+                        lab = t.get("label", "unclassified")
+                        labels[lab] = labels.get(lab, 0) + 1
+                    except json.JSONDecodeError:
                         pass
-        stats["tracks"][track_name] = {
+
+        tracks[track_name] = {
             "total": total,
             "quality": quality,
-            "tasks": tasks,
+            "labels": labels,
         }
-        stats["total_traces"] += total
 
-    stats["updated_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    stats = {
+        "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "tracks": tracks,
+        "defs": DEFS,
+    }
+
+    with open(STATS_FILE, "w") as f:
+        json.dump(stats, f, indent=2)
+    print(f"stats.json written — {os.path.getsize(STATS_FILE)} bytes")
     return stats
 
 
-class StatsHandler(SimpleHTTPRequestHandler):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=os.path.dirname(os.path.abspath(__file__)), **kwargs)
-
-    def do_GET(self):
-        if self.path == "/api/stats":
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
-            self.end_headers()
-            self.wfile.write(json.dumps(load_data()).encode())
-        else:
-            super().do_GET()
-
-    def log_message(self, format, *args):
-        pass
-
 if __name__ == "__main__":
-    server = HTTPServer(("0.0.0.0", 8765), StatsHandler)
-    print("Dashboard running at http://localhost:8765/")
-    server.serve_forever()
+    s = build_stats()
+    for tn, td in s["tracks"].items():
+        print(f"\n  {tn}: {td['total']} total")
+        print(f"    quality: {td['quality']}")
+        print(f"    labels ({len(td['labels'])}): {td['labels']}")
