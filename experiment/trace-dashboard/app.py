@@ -9,8 +9,6 @@ from datetime import datetime, timezone
 TRACES_DIR = "/Users/georgemalenclaw/.openclaw/workspace/experiment/traces"
 STATS_FILE = "/Users/georgemalenclaw/.openclaw/workspace/experiment/trace-dashboard/stats.json"
 
-GOAL = 200  # Target traces per label
-
 TRACKS = ["sft", "agentic", "distill"]
 
 DEFS = {
@@ -26,7 +24,7 @@ def build_stats():
         dirpath = os.path.join(TRACES_DIR, track_name)
         total = 0
         quality = {"great": 0, "good": 0, "mediocre": 0, "poor": 0}
-        labels = {}
+        label_counts = {"_total": 0}
 
         for fp in sorted(glob.glob(os.path.join(dirpath, "*.jsonl"))):
             with open(fp) as fh:
@@ -34,18 +32,20 @@ def build_stats():
                     try:
                         t = json.loads(line)
                         total += 1
+                        label_counts["_total"] += 1
                         q = t.get("quality", "unknown")
                         if q in quality:
                             quality[q] += 1
-                        lab = t.get("label", "unclassified")
-                        labels[lab] = labels.get(lab, 0) + 1
+                        # Use "capability" field (generic) for labeling
+                        lab = t.get("capability", "unclassified")
+                        label_counts[lab] = label_counts.get(lab, 0) + 1
                     except json.JSONDecodeError:
                         pass
 
         tracks[track_name] = {
             "total": total,
             "quality": quality,
-            "labels": labels,
+            "label_counts": label_counts,
         }
 
     stats = {
@@ -56,7 +56,7 @@ def build_stats():
 
     with open(STATS_FILE, "w") as f:
         json.dump(stats, f, indent=2)
-    print(f"stats.json written — {os.path.getsize(STATS_FILE)} bytes")
+
     return stats
 
 
@@ -65,4 +65,4 @@ if __name__ == "__main__":
     for tn, td in s["tracks"].items():
         print(f"\n  {tn}: {td['total']} total")
         print(f"    quality: {td['quality']}")
-        print(f"    labels ({len(td['labels'])}): {td['labels']}")
+        print(f"    labels: {td['label_counts']}")

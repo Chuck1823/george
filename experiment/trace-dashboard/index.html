@@ -8,11 +8,18 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
            background: #0f0f16; color: #e0e0e0; padding: 1rem; min-height: 100vh; }
-    .header { display: flex; flex-direction: column; gap: 0.5rem; padding-bottom: 1rem; border-bottom: 1px solid #2a2a35; margin-bottom: 1.5rem; }
+    .header { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 1rem; border-bottom: 1px solid #2a2a35; margin-bottom: 1.5rem; }
     h1 { font-size: 1rem; color: #00e676; }
     .header-right { display: flex; gap: 0.75rem; align-items: center; }
     .header-right a { color: #4fc3f7; font-size: 0.7rem; text-decoration: none; }
     .header-right span { color: #666; font-size: 0.6rem; }
+
+    /* Summary card */
+    .summary-card { background: linear-gradient(135deg, rgba(0,230,118,0.05), rgba(79,195,247,0.05)); border: 1px solid rgba(0,230,118,0.15); border-radius: 10px; padding: 1.2rem; margin-bottom: 1.5rem; text-align: center; }
+    .summary-num { font-size: 2.5rem; font-weight: 800; color: #fff; letter-spacing: -1px; }
+    .summary-sub { color: #888; font-size: 0.75rem; margin-top: 4px; }
+    .summary-label { font-size: 0.85rem; color: #4fc3f7; font-weight: 600; }
+    .summary-goal { color: #666; font-size: 0.7rem; margin-top: 2px; }
 
     .t-card { background: #161620; border-radius: 8px; margin-bottom: 1.2rem; border: 1px solid #2a2a35; overflow: hidden; }
     .t-label { font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.1em; color: #888; padding: 0.5rem 0.7rem 0.2rem; font-weight: 600; background: rgba(255,255,255,0.02); }
@@ -34,13 +41,26 @@
 
     .l-title { font-size: 0.52rem; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin: 0.4rem 0.7rem 0.2rem; font-weight: 600; }
     .l-row { display: flex; align-items: center; margin: 0.12rem 0.7rem; gap: 0.3rem; }
-    .l-name { width: 110px; font-size: 0.48rem; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .l-bar-bg { flex: 1; height: 3px; background: #222230; border-radius: 2px; overflow: hidden; }
-    .l-bar { height: 100%; border-radius: 2px; background: #a78bfa; transition: width 0.3s; }
-    .l-ct { width: 48px; text-align: right; font-size: 0.48rem; color: #999; }
+    .l-name { width: 100px; font-size: 0.52rem; color: #888; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .l-bar-bg { flex: 1; height: 4px; background: #222230; border-radius: 2px; overflow: hidden; }
+    .l-bar { height: 100%; border-radius: 2px; background: #a78bfa; }
+    .l-bar.unclassified { background: #555; }
+    .l-bar.devops { background: #4fc3f7; }
+    .l-bar.research { background: #9c27b0; }
+    .l-bar.coding { background: #4caf50; }
+    .l-bar.workflow_automation { background: #ff9800; }
+    .l-ct { width: 40px; text-align: right; font-size: 0.5rem; color: #999; }
     .l-ct .goal { color: #666; }
 
     .refresh-note { color: #555; font-size: 0.6rem; text-align: center; padding-top: 1rem; border-top: 1px solid #2a2a35; }
+
+    /* Track label summary row */
+    .track-label-summary { display: flex; align-items: center; padding: 0.3rem 0.7rem 0.4rem; gap: 0.4rem; }
+    .tls-label { font-size: 0.65rem; font-weight: 700; color: #fff; min-width: 90px; }
+    .tls-bar-bg { flex: 1; height: 8px; background: #222230; border-radius: 4px; overflow: hidden; }
+    .tls-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
+    .tls-ct { font-size: 0.6rem; color: #aaa; min-width: 60px; text-align: right; }
+    .tls-ct .goal { color: #666; }
   </style>
 </head>
 <body>
@@ -52,35 +72,66 @@
     </div>
   </div>
 
+  <!-- Summary card -->
+  <div class="summary-card" id="summary-card">
+    <div class="summary-num" id="summary-num">&mdash;</div>
+    <div class="summary-label" id="summary-label">Loading...</div>
+    <div class="summary-goal">Target: 200 unique labeled traces</div>
+    <div class="summary-sub" id="summary-sub"></div>
+  </div>
+
   <div id="dashboard"></div>
 
-  <div class="refresh-note">Rebuild stats: python3 experiment/scripts/export-all.py → python3 experiment/trace-dashboard/app.py → push stats.json</div>
+  <div class="refresh-note">Rebuild stats: python3 experiment/trace-dashboard/app.py → push stats.json</div>
 
   <script>
-    const defs = {
-      sft: 'Plain text only. Compatible with every fine-tuning API (OpenAI, Together, Fireworks, Unsloth, LLaMA-Factory).',
-      agentic: 'Tool calls + results. Compatible with OpenAI, Together, Fireworks, vLLM.',
-      distill: 'SFT + internal reasoning/thinking. Captures full thought process for distillation.'
-    };
-    const goal = 200;
-
     async function load() {
       try { const r = await fetch('stats.json'); render(await r.json()); }
       catch(e) { document.body.innerHTML = '<p style="color:#ef5350;padding:1rem">Failed to load stats.json</p>'; }
     }
+
+    const barColors = {
+      'devops':'#4fc3f7','research':'#9c27b0','coding':'#4caf50',
+      'workflow_automation':'#ff9800','general_assistant':'#888888','unclassified':'#555'
+    };
 
     function render(data) {
       document.getElementById('updated').textContent = data.updated_at || '';
       const el = document.getElementById('dashboard');
       el.innerHTML = '';
 
-      for (const tName of ['sft', 'agentic', 'distill']) {
-        const t = data.tracks[tName];
+      // Calculate combined labels across all tracks for summary
+      const combinedLabels = {};
+      let totalCount = 0;
+      for (const trackName of ['sft', 'agentic', 'distill']) {
+        const t = data.tracks[trackName];
+        if (t && t.label_counts) {
+          for (const [lab, ct] of Object.entries(t.label_counts)) {
+            combinedLabels[lab] = (combinedLabels[lab] || 0) + ct;
+          }
+          totalCount += t.label_counts._total || t.total || 0;
+        }
+      }
+
+      // Find leading label
+      let leadingLabel = 'unclassified', leadingCount = 0;
+      for (const [lab, ct] of Object.entries(combinedLabels)) {
+        if (lab.startsWith('_') || lab === '_total') continue;
+        if (ct > leadingCount) { leadingCount = ct; leadingLabel = lab; }
+      }
+
+      document.getElementById('summary-num').textContent = totalCount;
+      document.getElementById('summary-label').textContent = leadingLabel.replace(/_/g, ' ') + ' (' + leadingCount + ')';
+      const pct = Math.round(leadingCount / 200 * 100);
+      document.getElementById('summary-sub').textContent = pct + '% of target';
+
+      for (const trackName of ['sft', 'agentic', 'distill']) {
+        const t = data.tracks[trackName];
         if (!t || t.total === 0) continue;
 
         let html = '<div class="t-card">';
-        html += '<div class="t-label">' + tName.toUpperCase() + ' — ' + t.total + ' traces</div>';
-        html += '<div class="def-text">' + (data.defs[tName] || defs[tName]) + '</div>';
+        html += '<div class="t-label">' + trackName.toUpperCase() + ' — ' + t.total + ' traces</div>';
+        html += '<div class="def-text">' + (data.defs[trackName]) + '</div>';
 
         // Quality bars
         const maxQ = Math.max(...Object.values(t.quality), 1);
@@ -90,12 +141,13 @@
         }
 
         // Labels with goal tracking
-        if (t.labels) {
+        if (t.label_counts && Object.keys(t.label_counts).length > 1) {
           html += '<div class="l-title">Labels</div>';
-          const sorted = Object.entries(t.labels).sort((a, b) => b[1] - a[1]);
-          for (const [label, count] of sorted) {
-            const pct = Math.min(count / goal * 100, 100);
-            html += '<div class="l-row"><span class="l-name">' + label + '</span><div class="l-bar-bg"><div class="l-bar" style="width:' + pct + '%"></div></div><span class="l-ct">' + count + ' <span class="goal">/ ' + goal + '</span></span></div>';
+          const summary = Object.entries(t.label_counts).filter(([l]) => !l.startsWith('_'));
+          const maxL = Math.max(...summary.map(([l, c]) => c), 1);
+          for (const [lab, ct] of summary.sort((a, b) => b[1] - a[1])) {
+            const colorClass = lab;
+            html += '<div class="l-row"><span class="l-name">' + lab.replace(/_/g, ' ') + '</span><div class="l-bar-bg"><div class="l-bar ' + colorClass + '" style="width:' + (ct/maxL*100) + '%"></div></div><span class="l-ct">' + ct + ' <span class="goal">/ 200</span></span></div>';
           }
         }
         html += '</div>';
