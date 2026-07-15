@@ -80,6 +80,9 @@
     <div class="summary-sub" id="summary-sub"></div>
   </div>
 
+  <!-- Label progress bars -->
+  <div id="label-progress"></div>
+
   <div id="dashboard"></div>
 
   <div class="refresh-note">Rebuild stats: python3 experiment/trace-dashboard/app.py → push stats.json</div>
@@ -99,32 +102,45 @@
       document.getElementById('updated').textContent = data.updated_at || '';
       const el = document.getElementById('dashboard');
       el.innerHTML = '';
-
-      // Calculate combined labels across all tracks for summary
-      const combinedLabels = {};
-      let totalCount = 0;
-      for (const trackName of ['sft', 'agentic', 'distill']) {
-        const t = data.tracks[trackName];
-        if (t && t.label_counts) {
-          for (const [lab, ct] of Object.entries(t.label_counts)) {
-            combinedLabels[lab] = (combinedLabels[lab] || 0) + ct;
-          }
-          totalCount += t.label_counts._total || t.total || 0;
-        }
-      }
-
-      // Find leading label
-      let leadingLabel = 'unclassified', leadingCount = 0;
-      for (const [lab, ct] of Object.entries(combinedLabels)) {
-        if (lab.startsWith('_') || lab === '_total') continue;
-        if (ct > leadingCount) { leadingCount = ct; leadingLabel = lab; }
-      }
-
-      document.getElementById('summary-num').textContent = totalCount;
-      document.getElementById('summary-label').textContent = leadingLabel.replace(/_/g, ' ') + ' (' + leadingCount + ')';
-      const pct = Math.round(leadingCount / 200 * 100);
+      
+      // Summary: unique traces
+      const ut = data.unique_total || 0;
+      document.getElementById('summary-num').textContent = ut;
+      const pct = Math.round(ut / 200 * 100);
       document.getElementById('summary-sub').textContent = pct + '% of target';
-
+      
+      // Summary label from unique_labels
+      const ul = data.unique_labels || {};
+      const entries = Object.entries(ul).filter(([l]) => !l.startsWith('_'));
+      if (entries.length > 0) {
+        entries.sort((a, b) => b[1] - a[1]);
+        const leading = entries[0];
+        document.getElementById('summary-label').textContent = leading[0].replace(/_/g, ' ') + ' (' + leading[1] + ')';
+      }
+      
+      // Label progress bars (unique labels only)
+      const lp = document.getElementById('label-progress');
+      lp.innerHTML = '<div class="l-title">Label Progress (to 200)</div>';
+      
+      const uniqueLabels = data.unique_labels || {};
+      const labelEntries = Object.entries(uniqueLabels).filter(([l]) => !l.startsWith('_'));
+      const maxLabelCount = Math.max(...labelEntries.map(([_, ct]) => ct), 1);
+      
+      for (const [lab, ct] of labelEntries.sort((a, b) => b[1] - a[1])) {
+        const colorClass = barColors[lab] ? lab : 'unclassified';
+        const barWidth = Math.min(ct / 200 * 100, 100);
+        
+        const row = document.createElement('div');
+        row.className = 'l-row';
+        row.innerHTML = `
+          <span class="l-name">${lab.replace(/_/g, ' ')}</span>
+          <div class="l-bar-bg"><div class="l-bar ${colorClass}" style="width:${barWidth}%"></div></div>
+          <span class="l-ct">${ct} <span class="goal">/ 200</span></span>
+        `;
+        lp.appendChild(row);
+      }
+      
+      // Track cards
       for (const trackName of ['sft', 'agentic', 'distill']) {
         const t = data.tracks[trackName];
         if (!t || t.total === 0) continue;
@@ -144,7 +160,7 @@
         if (t.label_counts && Object.keys(t.label_counts).length > 1) {
           html += '<div class="l-title">Labels</div>';
           const summary = Object.entries(t.label_counts).filter(([l]) => !l.startsWith('_'));
-          const maxL = Math.max(...summary.map(([l, c]) => c), 1);
+          const maxL = Math.max(...summary.map(([_, c]) => c), 1);
           for (const [lab, ct] of summary.sort((a, b) => b[1] - a[1])) {
             const colorClass = lab;
             html += '<div class="l-row"><span class="l-name">' + lab.replace(/_/g, ' ') + '</span><div class="l-bar-bg"><div class="l-bar ' + colorClass + '" style="width:' + (ct/maxL*100) + '%"></div></div><span class="l-ct">' + ct + ' <span class="goal">/ 200</span></span></div>';

@@ -1,35 +1,44 @@
-# Export pipeline for the distillation experiment.
-# Runs weekly to export + (optionally) teacher-grade all sessions.
-
+#!/usr/bin/env zsh
+# Weekly trace export, labeling, and dashboard refresh
 set -e
-cd /Users/georgemalenclaw/.openclaw/workspace
 
-echo "=== Step 1: Export traces ==="
-python3 experiment/scripts/export-all.py
+WORKSPACE="/Users/georgemalenclaw/.openclaw/workspace"
+TRACES="$WORKSPACE/experiment/traces"
+DASHBOARD="$WORKSPACE/experiment/trace-dashboard"
+SESSIONS_DIR="/Users/georgemalenclaw/.openclaw/agents/main/sessions"
+
+echo "=== Weekly Export $(date -u '+%Y-%m-%d %H:%M UTC') ==="
+
+# Step 1: Export new sessions to traces
+echo ""
+echo "1. Exporting sessions..."
+python3 "$WORKSPACE/experiment/scripts/export-all.py"
+
+# Step 2: Auto-label traces via OpenRouter
+echo ""
+echo "2. Classifying traces..."
+python3 "$WORKSPACE/experiment/scripts/classify-traces.py"
+
+# Step 3: Rebuild dashboard stats
+echo ""
+echo "3. Rebuilding stats.json..."
+python3 "$DASHBOARD/app.py"
+
+# Step 4: Push dashboard to GitHub Pages
+echo ""
+echo "4. Pushing dashboard..."
+DASH_TMP="/tmp/trace-dashboard-push-$$"
+rm -rf "$DASH_TMP"
+gh repo clone Chuck1823/trace-dashboard "$DASH_TMP" -- --depth 1
+cp "$DASHBOARD/index.html" "$DASH_TMP/index.html"
+cp "$DASHBOARD/stats.json" "$DASH_TMP/stats.json"
+cp "$DASHBOARD/app.py" "$DASH_TMP/app.py"
+cd "$DASH_TMP"
+git add -A
+git commit -m "Weekly update $(date -u '+%Y-%m-%d')"
+git push origin main
+cd "$WORKSPACE"
+rm -rf "$DASH_TMP"
 
 echo ""
-echo "=== Step 2: Teacher grading ==="
-if [ -n "$TEACHER_API_KEY" ]; then
-    echo "TEACHER_API_KEY set — running teacher grading..."
-    TEACHER_MODEL="${TEACHER_MODEL:-claude-sonnet-4-20250514}" export TEACHER_MODEL
-    python3 experiment/scripts/teacher-grade.py
-else
-    echo "No TEACHER_API_KEY set. Grading skipped."
-    echo "Set env vars to enable:"
-    echo "  TEACHER_API_KEY=xxx"
-    echo "  TEACHER_MODEL=claude-sonnet-4-20250514"
-fi
-
-echo ""
-echo "=== Step 3: Commit and push ==="
-cd /Users/georgemalenclaw/.openclaw/workspace
-if git diff --quiet experiment/traces/ 2>/dev/null; then
-    echo "No changes to commit."
-else
-    git add experiment/traces/
-    git commit -m "Weekly trace export $(date +%Y-%m-%d)"
-    git push
-fi
-
-python3 experiment/scripts/export-all.py
-fi
+echo "=== Weekly export complete ==="

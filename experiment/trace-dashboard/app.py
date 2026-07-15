@@ -18,6 +18,24 @@ DEFS = {
 }
 
 
+def count_unique_traces():
+    """Count unique traces in sft track (one trace per line)."""
+    dirpath = os.path.join(TRACES_DIR, "sft")
+    unique = 0
+    label_counts = {}
+    for fp in sorted(glob.glob(os.path.join(dirpath, "*.jsonl"))):
+        with open(fp) as fh:
+            for line in fh:
+                try:
+                    t = json.loads(line)
+                    unique += 1
+                    lab = t.get("capability", "unclassified")
+                    label_counts[lab] = label_counts.get(lab, 0) + 1
+                except json.JSONDecodeError:
+                    pass
+    return unique, label_counts
+
+
 def build_stats():
     tracks = {}
     for track_name in TRACKS:
@@ -36,7 +54,6 @@ def build_stats():
                         q = t.get("quality", "unknown")
                         if q in quality:
                             quality[q] += 1
-                        # Use "capability" field (generic) for labeling
                         lab = t.get("capability", "unclassified")
                         label_counts[lab] = label_counts.get(lab, 0) + 1
                     except json.JSONDecodeError:
@@ -48,8 +65,12 @@ def build_stats():
             "label_counts": label_counts,
         }
 
+    unique_total, unique_labels = count_unique_traces()
+
     stats = {
         "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "unique_total": unique_total,
+        "unique_labels": unique_labels,
         "tracks": tracks,
         "defs": DEFS,
     }
@@ -62,6 +83,8 @@ def build_stats():
 
 if __name__ == "__main__":
     s = build_stats()
+    print(f"\n  Unique traces: {s['unique_total']}")
+    print(f"  Unique labels: {s['unique_labels']}")
     for tn, td in s["tracks"].items():
         print(f"\n  {tn}: {td['total']} total")
         print(f"    quality: {td['quality']}")

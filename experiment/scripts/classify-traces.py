@@ -41,7 +41,7 @@ CAPABILITIES = [
 def classify_batch(traces):
     samples = []
     for i, t in enumerate(traces):
-        msgs = t.get("messages", [])[:8]
+        msgs = t.get("messages", [])[-12:]
         parts = []
         for m in msgs:
             c = m.get("content","")
