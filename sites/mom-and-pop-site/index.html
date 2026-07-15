@@ -107,7 +107,7 @@
       .pmh{min-width:100%}
       .pmb{margin-left:0;margin-top:12px}
     }
-    .ct{padding:40px 0 60px;text-align:center}
+    .cta{padding:40px 0 60px;text-align:center}
     .cx{background:rgba(255,255,255,0.015);border:1px solid rgba(255,255,255,0.04);border-radius:10px;padding:40px 24px}
     .cx h2{font-size:1.3rem;font-weight:800;margin-bottom:6px}
     .cx h2 .ac{background:linear-gradient(135deg,#5EB5F7,#A78BFA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -235,98 +235,15 @@
     <p>With its capabilities — answering calls, booking appointments, reducing no-shows, and bringing back lost customers — The Desk typically pays for itself and beyond. Very easily.</p>
   </section>
 
-  <div class="ln"></div>
+  
 
-  <section class="w">
-    <div class="db">
-      <h2>Your data is a <span class="ac">company asset.</span></h2>
-      <p>The most valuable data in the next five years will be your interactions with AI. You should own it.</p>
-      <p>Booking apps, POS systems, review tools — they all read your customer data. The Desk doesn't. Your relationships stay local on hardware you own.</p>
-      <p style="margin-top:12px;color:#888;font-size:0.85rem">Once mass aggregation is achieved, there will be an opt-in data sharing program that could cover your subscription through dividends. We handle de-identification and payouts automatically.</p>
-      <p class="as">* No guaranteed returns. Details to follow.</p>
-      </div>
-    </div>
-  </section>
+<div class="ln"></div>
 
-  <div class="ln"></div>
-
-  <section class="ct w">
-    <div class="cx">
-      <h2>AI that runs your <span class="ac">front desk.</span></h2>
-      <p>Join the waitlist to be notified when The Desk launches.</p>
-      <button onclick="om()" class="btn">Join Waitlist</button>
-    </div>
-  </section>
-
-  <div class="ln"></div>
-
-  <div class="mo" id="wm" onclick="if(event.target===this)cm()">
-    <div class="mx">
-      <button class="mc" onclick="cm()">&times;</button>
-      <div id="wl-f">
-        <h3>Join the Waitlist</h3>
-        <p class="ms">Be first to know when The Desk launches.</p>
-        <form id="wf" onsubmit="sw(event)">
-          <div class="ff"><label>Name</label><input type="text" name="name" placeholder="Your name" required></div>
-          <div class="ff"><label>Email</label><input type="email" name="email" placeholder="you@example.com" required></div>
-          <div class="ff"><label>Business type</label>
-            <select name="business_type">
-              <option value="">Select your business type</option>
-              <option value="nail_salon">Nail Salon</option>
-              <option value="barber_shop">Barber Shop</option>
-              <option value="hair_salon">Hair Salon</option>
-              <option value="restaurant">Restaurant / Cafe</option>
-              <option value="spa_wellness">Spa / Wellness</option>
-              <option value="auto_repair">Auto Repair</option>
-              <option value="dry_cleaner">Dry Cleaner</option>
-              <option value="retail">Retail / Boutique</option>
-              <option value="fitness">Fitness / Gym</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div class="ff"><label>Phone (optional)</label><input type="tel" name="phone" placeholder="+1 (555) 123-4567"></div>
-          <button type="submit" class="fsb">Join Waitlist</button>
-        </form>
-      </div>
-      <div class="mt" id="wl-t">
-        <h3>You're on the list! &#x1f389;</h3>
-        <p style="color:#888;font-size:0.85rem;margin-top:8px">We'll reach out when The Desk is ready.</p>
-      </div>
-    </div>
-  </div>
-
-  <footer class="w"><p>&copy; 2026 Mom and Pop Labs. All rights reserved.</p></footer>
-
-  <script>
-    function uc(id){
-      document.querySelectorAll('.uc').forEach(function(e){e.classList.remove('active')});
-      document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('active')});
-      document.getElementById('u'+(id==='desk'?'d':'o')).classList.add('active');
-      document.getElementById(id==='desk'?'fd':'fo').classList.add('active');
-      event.target.classList.add('active');
-    }
-    function om(){document.getElementById('wm').classList.add('show')}
-    function cm(){document.getElementById('wm').classList.remove('show');document.getElementById('wl-f').style.display='block';document.getElementById('wl-t').classList.remove('show')}
-    function sw(e){
-      e.preventDefault();
-      var f=e.target,d={name:f.name.value,email:f.email.value,bt:f.business_type.value,ph:f.phone.value||''};
-      d.ts=new Date().toISOString();
-      var l=JSON.parse(localStorage.getItem('wm')||'[]');l.push(d);
-      localStorage.setItem('wm',JSON.stringify(l));
-      document.getElementById('wl-f').style.display='none';
-      document.getElementById('wl-t').classList.add('show');
-      setTimeout(cm,3000);f.reset();
-    }
-  </script>
-</body>
-</html>
   <section class="pr w" id="pricing">
     <div class="sl">Pricing</div>
     <div class="st">Your AI front desk. Less than a part-time employee.</div>
 
-    <!-- Pricing matrix -->
     <div class="pmt">
-      <!-- Row 1: Essential -->
       <div class="pmr">
         <div class="pmh" style="justify-content:center">
           <div class="sl">Essential</div>
@@ -351,8 +268,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Row 2: Growth -->
       <div class="pmr">
         <div class="pmh" style="justify-content:center">
           <div class="sl">Growth</div>
@@ -379,7 +294,6 @@
       </div>
     </div>
 
-    <!-- Lease -->
     <div class="pmr">
       <div class="pmh" style="justify-content:center">
         <div class="sl">Lease</div>
@@ -406,160 +320,7 @@
     </div>
   </section>
 
-  <div class="ln"></div>
 
-  <section class="ct w">
-    <div class="cx">
-      <h2>AI that runs your <span class="ac">front desk.</span></h2>
-      <p>Join the waitlist to be notified when The Desk launches.</p>
-      <button onclick="om()" class="btn">Join Waitlist</button>
-    </div>
-  </section>
+<div class="ln"></div>
 
-  <div class="ln"></div>
 
-  <div class="mo" id="wm" onclick="if(event.target===this)cm()">
-    <div class="mx">
-      <button class="mc" onclick="cm()">&times;</button>
-      <div id="wl-f">
-        <h3>Join the Waitlist</h3>
-        <p class="ms">Be first to know when The Desk launches.</p>
-        <form id="wf" onsubmit="sw(event)">
-          <div class="ff"><label>Name</label><input type="text" name="name" placeholder="Your name" required></div>
-          <div class="ff"><label>Email</label><input type="email" name="email" placeholder="you@example.com" required></div>
-          <div class="ff"><label>Business type</label>
-            <select name="business_type">
-              <option value="">Select your business type</option>
-              <option value="nail_salon">Nail Salon</option>
-              <option value="barber_shop">Barber Shop</option>
-              <option value="hair_salon">Hair Salon</option>
-              <option value="restaurant">Restaurant / Cafe</option>
-              <option value="spa_wellness">Spa / Wellness</option>
-              <option value="auto_repair">Auto Repair</option>
-              <option value="dry_cleaner">Dry Cleaner</option>
-              <option value="retail">Retail / Boutique</option>
-              <option value="fitness">Fitness / Gym</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div class="ff"><label>Phone (optional)</label><input type="tel" name="phone" placeholder="+1 (555) 123-4567"></div>
-          <button type="submit" class="fsb">Join Waitlist</button>
-        </form>
-      </div>
-      <div class="mt" id="wl-t">
-        <h3>You're on the list! &#x1f389;</h3>
-        <p style="color:#888;font-size:0.85rem;margin-top:8px">We'll reach out when The Desk is ready.</p>
-      </div>
-    </div>
-  </div>
-
-  <footer class="w"><p>&copy; 2026 Mom and Pop Labs. All rights reserved.</p></footer>
-
-  <script>
-    function uc(id){
-      document.querySelectorAll('.uc').forEach(function(e){e.classList.remove('active')});
-      document.querySelectorAll('.tb').forEach(function(b){b.classList.remove('active')});
-      document.getElementById('u'+(id==='desk'?'d':'o')).classList.add('active');
-      document.getElementById(id==='desk'?'fd':'fo').classList.add('active');
-      event.target.classList.add('active');
-    }
-    function om(){document.getElementById('wm').classList.add('show')}
-    function cm(){document.getElementById('wm').classList.remove('show');document.getElementById('wl-f').style.display='block';document.getElementById('wl-t').classList.remove('show')}
-    function sw(e){
-      e.preventDefault();
-      var f=e.target,d={name:f.name.value,email:f.email.value,bt:f.business_type.value,ph:f.phone.value||''};
-      d.ts=new Date().toISOString();
-      var l=JSON.parse(localStorage.getItem('wm')||'[]');l.push(d);
-      localStorage.setItem('wm',JSON.stringify(l));
-      document.getElementById('wl-f').style.display='none';
-      document.getElementById('wl-t').classList.add('show');
-      setTimeout(cm,3000);f.reset();
-    }
-  </script>
-</body>
-</html>
-  <section class="pr w" id="pricing">
-    <div class="sl">Pricing</div>
-    <div class="st">Your AI front desk. Less than a part-time employee.</div>
-
-    <!-- Pricing matrix grid -->
-    <div class="pmt">
-      <!-- Row 1: Essential -->
-      <div class="pmr">
-        <div class="pmh" style="justify-content:center">
-          <div class="sl">Essential</div>
-          <h3>Essential</h3>
-          <small>Your AI front desk</small>
-          <div class="pf">24/7 · WhatsApp · SMS</div>
-        </div>
-        <div class="pmb">
-          <div class="pmc">
-            <div class="ct">SMS / WhatsApp / Telegram</div>
-            <div class="cp">$50<small>/mo</small></div>
-            <div class="cs">$200 one-time setup</div>
-            <ul><li>Your own dedicated number</li><li>24/7 smart call &amp; text answering</li><li>Booking &amp; scheduling</li><li>Customer memory</li><li>Appointment reminders</li><li>Google review replies</li><li>Weekly business report</li></ul>
-            <button onclick="om()" class="bom">Join Waitlist</button>
-          </div>
-          <div class="pmc hl">
-            <div class="ct">With iMessage</div>
-            <div class="cp">$200<small>/mo</small></div>
-            <div class="cs">$300 one-time setup</div>
-            <ul><li>Full native iMessage support</li><li>Dedicated iMessage number</li><li>Apple ecosystem integration</li><li>Everything in SMS tier</li></ul>
-            <button onclick="om()" class="bsm">Join Waitlist</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Row 2: Growth -->
-      <div class="pmr">
-        <div class="pmh" style="justify-content:center">
-          <div class="sl">Growth</div>
-          <h3>Growth</h3>
-          <small>Full AI operations</small>
-          <div class="pf">Automation + analytics + voice</div>
-        </div>
-        <div class="pmb">
-          <div class="pmc">
-            <div class="ct">SMS / WhatsApp / Telegram</div>
-            <div class="cp">$100<small>/mo</small></div>
-            <div class="cs">$300 one-time setup</div>
-            <ul><li>Everything in Essential</li><li>No-show reduction system</li><li>Customer retention campaigns</li><li>Bilingual conversation</li><li>Owner voice clone</li><li>POS integration</li><li>Revenue analytics</li></ul>
-            <button onclick="om()" class="bom">Join Waitlist</button>
-          </div>
-          <div class="pmc hl">
-            <div class="ct">With iMessage</div>
-            <div class="cp">$250<small>/mo</small></div>
-            <div class="cs">$400 one-time setup</div>
-            <ul><li>Everything in Growth SMS</li><li>Full native iMessage support</li><li>Priority onboarding</li></ul>
-            <button onclick="om()" class="bsm">Join Waitlist</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Lease -->
-    <div class="pmr">
-      <div class="pmh" style="justify-content:center">
-        <div class="sl">Lease</div>
-        <h3>Lease</h3>
-        <small>We own the hardware</small>
-        <div class="pf">12-month minimum · $0 upfront</div>
-      </div>
-      <div class="pmb">
-        <div class="pmc">
-          <div class="ct">No iMessage</div>
-          <div class="cp">$85<small>/mo</small></div>
-          <div class="cs">$0 upfront</div>
-          <ul><li>Essential tier features</li><li>Dedicated phone number</li><li>WhatsApp / SMS / Telegram</li><li>We own the hardware</li><li>12-month minimum</li><li>Zero risk</li></ul>
-          <button onclick="om()" class="bom">Join Waitlist</button>
-        </div>
-        <div class="pmc">
-          <div class="ct">With iMessage</div>
-          <div class="cp">$150<small>/mo</small></div>
-          <div class="cs">$0 upfront</div>
-          <ul><li>Growth tier features</li><li>Dedicated phone + iMessage</li><li>We own the hardware</li><li>12-month minimum</li><li>Zero risk</li></ul>
-          <button onclick="om()" class="bom">Join Waitlist</button>
-        </div>
-      </div>
-    </div>
-  </section>
